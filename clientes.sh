@@ -4,6 +4,10 @@ echo "services:
       context: ./services/server
       dockerfile: Dockerfile
     container_name: server
+    volumes:
+      - ./output:/output
+    ports:
+      - "5678:5678"
     environment:
       - PYTHONUNBUFFERED=1
       - SERVER_HOST=server
@@ -18,6 +22,8 @@ for i in $(seq 0 $1); do
     container_name: client_"$i"
     depends_on:
       - server
+    volumes:
+      - ./input:/input
     environment:
       - AGENCY_ID="$i"
       - SERVER_HOST=server

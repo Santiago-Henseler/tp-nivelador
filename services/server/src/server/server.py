@@ -3,13 +3,14 @@ import logger
 import safe_socket
 
 _ECHO_SERVER_MESSAGE_SIZE = 1024
+OUTPUT_FILE = "output.txt"
 
 
 class Server:
     def __init__(self, server_host: str, server_port: int) -> None:
         self.server_host = server_host
         self.server_port = server_port
-
+        
     def _handle_client(self, client_socket):
         action = "handle-client"
         message_amount = 0
@@ -28,6 +29,9 @@ class Server:
                     )
                     return
                 message_amount += 1
+                with open("output/" +OUTPUT_FILE, "a") as f:
+                    f.write(client_message.decode())
+                    f.write("\n")
                 safe_socket.send_all(client_socket, client_message)
         except Exception as e:
             logger.error(

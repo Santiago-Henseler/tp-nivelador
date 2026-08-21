@@ -48,6 +48,7 @@ func run() int {
 		logger.Error("client-run", logger.Fail, "err", err)
 		return 1
 	}
+	
 	return 0
 }
 

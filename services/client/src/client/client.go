@@ -3,7 +3,8 @@ package client
 import (
 	"net"
 	"time"
-
+	"os"
+	"bufio"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/logger"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/safe_socket"
 )
@@ -14,6 +15,8 @@ const CONNECTION_ATTEMPS_DELAY_MS = 200
 const ECHO_CLIENT_BUFFER_SIZE = 512
 const ECHO_CLIENT_MESSAGE_AMOUNT = 3
 const ECHO_CLIENT_MESSAGE_DELAY_MS = 1000
+
+const FILE_NAME = "input/input-0.csv"
 
 type ClientConfig struct {
 	ServerHost string
@@ -59,34 +62,27 @@ func connectToServer(host, port string) (net.Conn, error) {
 }
 
 func (client *Client) Run() error {
-	const mainAction = "test-echo-server"
+	archivo, err := os.Open(FILE_NAME)
+	
+	if err != nil {
+		logger.Error("client-open-file", logger.Fail, "err", err)
+		return nil
+	}
+
 	defer client.conn.Close()
+	defer archivo.Close()
 
-	for messageId := range ECHO_CLIENT_MESSAGE_AMOUNT {
-		messageArgs := []any{"agency-id", client.config.AgencyId, "message-id", messageId}
-		logger.Info(mainAction, logger.InProgress, messageArgs...)
-
-		clientMessage := client.config.AgencyId
-
-		if err := safe_socket.SendAll(client.conn, []byte(clientMessage)); err != nil {
-			logger.Error("send-message", logger.Fail, messageArgs...)
-			return err
-		}
-
-		responseBuffer, err := safe_socket.RecvAll(client.conn, ECHO_CLIENT_BUFFER_SIZE)
-		if err != nil {
-			logger.Error("recv-response", logger.Fail, messageArgs...)
-			return err
-		}
-
-		if string(responseBuffer) == clientMessage {
-			logger.Error("check-response", logger.Fail, messageArgs...)
+	scanner := bufio.NewScanner(archivo)
+	for scanner.Scan() {
+		
+		if err := safe_socket.SendAll(client.conn, []byte(scanner.Text())); err != nil {
+			logger.Error("send-message", logger.Fail, client.config.AgencyId)
 			return err
 		}
 
 		time.Sleep(ECHO_CLIENT_MESSAGE_DELAY_MS * time.Millisecond)
 	}
-	logger.Info(mainAction, logger.Success, "agency-id", client.config.AgencyId)
-
+	logger.Info("client-send-file", logger.Success, "agency-id", client.config.AgencyId)
+	
 	return nil
 }
