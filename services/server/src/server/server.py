@@ -1,47 +1,45 @@
 import socket
 import logger
-import safe_socket
+import message
+from lottery.lottery import Lottery
 
-_ECHO_SERVER_MESSAGE_SIZE = 1024
 OUTPUT_FILE = "output.txt"
-
 
 class Server:
     def __init__(self, server_host: str, server_port: int) -> None:
         self.server_host = server_host
         self.server_port = server_port
         
-    def _handle_client(self, client_socket):
+    def _handle_client(self, client_socket, lottery):
         action = "handle-client"
         message_amount = 0
         try:
             logger.info(action, logger.LogResult.in_progress)
-            while True:
-                client_message = safe_socket.recv_all(
-                    client_socket, _ECHO_SERVER_MESSAGE_SIZE
-                )
-                if not client_message:
-                    logger.info(
-                        action,
-                        logger.LogResult.success,
-                        "messages-amount",
-                        message_amount,
-                    )
-                    return
+            comunication = True
+            while comunication:
+                client_bet = message.recive_bet_message(client_socket)
+
+                if client_bet == None:
+                    logger.info( action, logger.LogResult.success, "messages-amount", message_amount)
+                    comunication = False
+                    continue
+
+                lottery.store_bets([client_bet])
                 message_amount += 1
-                with open("output/" +OUTPUT_FILE, "a") as f:
-                    f.write(client_message)
-                    f.write("\n")
-                safe_socket.send_all(client_socket, client_message)
         except Exception as e:
             logger.error( action, logger.LogResult.fail, "messages-amount", message_amount)
             raise e
+
+        for bet in lottery.load_bets():
+            logger.error( action, logger.LogResult.fail, "messages-amount", bet.first_name)
+
 
     def run(self):
         action = "accept-connection"
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.server_host, self.server_port))
             server_socket.listen()
+            lottery = Lottery("output/"+OUTPUT_FILE)
             while True:
                 try:
                     logger.info(action, logger.LogResult.in_progress)
@@ -51,4 +49,4 @@ class Server:
                     raise e
                 logger.info(action, logger.LogResult.success)
 
-                self._handle_client(client_socket)
+                self._handle_client(client_socket, lottery)

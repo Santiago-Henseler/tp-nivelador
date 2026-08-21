@@ -4,7 +4,6 @@ from .bet import Bet
 
 _LOTTERY_WINNER_NUMBER = 7574
 
-
 class Lottery:
     def __init__(self, storage_path) -> None:
         self.storage_path = storage_path

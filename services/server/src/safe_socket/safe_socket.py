@@ -2,22 +2,21 @@ import socket
 import logger
 
 def recv_all(socket: socket.socket, size):
-    return socket.recv(size).decode()
-
-    data = ""
-    recive = 0
-    while recive < size:
+    bytes = b""
+    recived = 0
+    while recived < size:
         try:
-            recived = socket.recv(size)
-            recive += len(recived)
-            data.join(recived.decode())
+            byte_rec = socket.recv(size - recived)
+            if not byte_rec:
+                return  bytes
+
+            recived += len(byte_rec)
+            bytes += byte_rec
         except Exception as e:
             logger.error("recive-all", logger.LogResult.fail, "error", e)
-            return ""
+            return b""
 
-    logger.error("recive-all", logger.LogResult.fail, "error", data)
-
-    return data
+    return bytes
 
 def send_all(socket: socket.socket, bytes):
 

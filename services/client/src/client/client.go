@@ -6,15 +6,11 @@ import (
 	"os"
 	"bufio"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/logger"
-	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/safe_socket"
+	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/message"
 )
 
 const CONNECTION_ATTEMPTS_MAX = 3
 const CONNECTION_ATTEMPS_DELAY_MS = 200
-
-const ECHO_CLIENT_BUFFER_SIZE = 512
-const ECHO_CLIENT_MESSAGE_AMOUNT = 3
-const ECHO_CLIENT_MESSAGE_DELAY_MS = 1000
 
 const FILE_NAME = "input/input-0.csv"
 
@@ -63,7 +59,6 @@ func connectToServer(host, port string) (net.Conn, error) {
 
 func (client *Client) Run() error {
 	archivo, err := os.Open(FILE_NAME)
-	
 	if err != nil {
 		logger.Error("client-open-file", logger.Fail, "err", err)
 		return nil
@@ -74,13 +69,13 @@ func (client *Client) Run() error {
 
 	scanner := bufio.NewScanner(archivo)
 	for scanner.Scan() {
-		
-		if err := safe_socket.SendAll(client.conn, []byte(scanner.Text())); err != nil {
-			logger.Error("send-message", logger.Fail, client.config.AgencyId)
+	
+		betMesage, err := message.CreateMessageBet(client.config.AgencyId, scanner.Text());
+		if err != nil {
 			return err
 		}
 
-		time.Sleep(ECHO_CLIENT_MESSAGE_DELAY_MS * time.Millisecond)
+		message.SendBetMessage(client.conn, betMesage);
 	}
 	logger.Info("client-send-file", logger.Success, "agency-id", client.config.AgencyId)
 	
