@@ -17,11 +17,19 @@ func SendAll(socket io.Writer, bytes []byte) error {
 }
 
 func RecvAll(socket io.Reader, size int) ([]byte, error) {
-	//TODO short read
-	buff := make([]byte, size)
-	_, err := socket.Read(buff)
-	if err != nil {
-		return nil, err
+	buffer := make([]byte, size)
+	bytes := make([]byte, 0, size)
+
+	var recived = 0
+
+	for recived < size {
+		byte_rec, err := socket.Read(buffer)
+		if err != nil {
+			return nil, err
+		}
+		recived += byte_rec
+		bytes = append(bytes, buffer[:byte_rec]...) 
 	}
-	return buff, nil
+
+	return bytes, nil
 }

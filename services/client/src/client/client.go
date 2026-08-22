@@ -77,6 +77,18 @@ func (client *Client) Run() error {
 
 		message.SendBetMessage(client.conn, betMesage);
 	}
+	
+	a := false
+	for a {
+		betMesage, err := message.ReciveBetMessage(client.conn)
+
+		if err != nil{
+			a = false
+			continue
+		}
+		logger.Info("client-champion", logger.Success, "agency-id", betMesage.First_name)
+	}
+
 	logger.Info("client-send-file", logger.Success, "agency-id", client.config.AgencyId)
 	
 	return nil

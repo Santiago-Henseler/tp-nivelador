@@ -24,9 +24,20 @@ def recive_bet_message(socket: socket.socket):
     last_name = strings[first_name_len:first_name_len+last_name_len].decode()
     birthdate = strings[first_name_len+last_name_len:].decode()
 
-
     return Bet(agency_id, first_name, last_name, document, birthdate, number)
 
+def send_bet_message(socket: socket.socket, bet):
 
-def send_bet_message(socket: socket.socket):
-    
+    bytes = bet.agency_id.to_bytes(4, byteorder='big')
+    bytes += bet.document.to_bytes(4, byteorder='big')
+    bytes += bet.number.to_bytes(4, byteorder='big')
+
+    bytes += len(bet.first_name).to_bytes(4, byteorder='big')
+    bytes += len(bet.last_name).to_bytes(4,  byteorder='big')
+    bytes += len(bet.birthdate).to_bytes(4, byteorder='big')
+
+    bytes += bet.first_name.encode()
+    bytes += bet.last_name.encode()
+    bytes += bet.birthdate.encode()
+
+    safe_socket.send_all(socket, bytes)

@@ -84,3 +84,32 @@ func SendBetMessage(conn net.Conn, betMesage BetMessage) error{
 
 	return nil
 }
+
+func ReciveBetMessage(conn  net.Conn) (BetMessage, error){
+
+	integers, err := safe_socket.RecvAll(conn, 24)
+
+	if len(integers) < 24 || err != nil{
+		return BetMessage{}, errors.New("mensaje inválido")
+	}
+
+	agencyId := int32(binary.BigEndian.Uint32(integers[0:4]))
+	document := int32(binary.BigEndian.Uint32(integers[4:8]))
+	number := int32(binary.BigEndian.Uint32(integers[8:12]))
+
+	first_name_len := int32(binary.BigEndian.Uint32(integers[12:16]))
+	last_name_len := int32(binary.BigEndian.Uint32(integers[16:20]))
+	birthdate_len :=  int32(binary.BigEndian.Uint32(integers[20:24]))
+
+	strings, err := safe_socket.RecvAll(conn, int(first_name_len + last_name_len + birthdate_len))
+
+	if err != nil{
+		return BetMessage{}, errors.New("mensaje inválido")
+	}
+
+	first_name := string(strings[0:first_name_len])
+	last_name := string(strings[first_name_len:first_name_len+last_name_len])
+	birthdate := string(strings[first_name_len+last_name_len+birthdate_len:])
+
+	return BetMessage{int(agencyId), first_name, last_name, int(document), birthdate, int(number)}, nil
+}

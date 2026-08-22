@@ -8,7 +8,7 @@ def recv_all(socket: socket.socket, size):
         try:
             byte_rec = socket.recv(size - recived)
             if not byte_rec:
-                return  bytes
+                return bytes
 
             recived += len(byte_rec)
             bytes += byte_rec
