@@ -27,7 +27,10 @@ for i in $(seq 0 $1); do
     environment:
       - AGENCY_ID="$i"
       - SERVER_HOST=server
-      - SERVER_PORT=5678" >> docker-compose.yml
+      - SERVER_PORT=5678
+      - BATCH_SIZE=3
+      - INPUTFILE=input/input-0.csv
+      - OUTPUTFILE=output/winers.txt" >> docker-compose.yml
 done
 
 echo "[INFO] Se creo el docker-compose con" $1 "clientes"

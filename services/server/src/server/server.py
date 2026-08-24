@@ -23,8 +23,8 @@ class Server:
                     logger.info( action, logger.LogResult.success, "messages-amount", message_amount)
                     comunication = False
                     continue
-
-                lottery.store_bets([client_bet])
+                
+                lottery.store_bets(client_bet)
                 message_amount += 1
         except Exception as e:
             logger.error( action, logger.LogResult.fail, "messages-amount", message_amount)
@@ -32,7 +32,6 @@ class Server:
 
         for bet in lottery.load_bets():
             if lottery.has_won(bet):
-                logger.info( action, logger.LogResult.success, "win", bet.first_name)
                 message.send_bet_message(client_socket,  bet)
 
         message.end_bet_message(client_socket)

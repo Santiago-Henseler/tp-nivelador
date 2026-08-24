@@ -27,4 +27,7 @@ services:
       - AGENCY_ID=0
       - SERVER_HOST=server
       - SERVER_PORT=5678
+      - BATCH_SIZE=3
+      - INPUTFILE=input/input-0.csv
+      - OUTPUTFILE=output/winers.txt
 

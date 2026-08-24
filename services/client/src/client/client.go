@@ -12,12 +12,13 @@ import (
 const CONNECTION_ATTEMPTS_MAX = 3
 const CONNECTION_ATTEMPS_DELAY_MS = 200
 
-const FILE_NAME = "input/input-0.csv"
-
 type ClientConfig struct {
 	ServerHost string
 	ServerPort string
 	AgencyId   string
+	Batch int
+	InputFile string
+	OutputFile string
 }
 
 type Client struct {
@@ -58,7 +59,7 @@ func connectToServer(host, port string) (net.Conn, error) {
 }
 
 func (client *Client) Run() error {
-	archivo, err := os.Open(FILE_NAME)
+	archivo, err := os.Open(client.config.InputFile)
 	if err != nil {
 		logger.Error("client-open-file", logger.Fail, "err", err)
 		return nil
@@ -67,36 +68,54 @@ func (client *Client) Run() error {
 	defer client.conn.Close()
 	defer archivo.Close()
 
+	i := 0
+	betMesages := []message.BetMessage{}
 	scanner := bufio.NewScanner(archivo)
 	for scanner.Scan() {
-	
+		
 		betMesage, err := message.CreateMessageBet(client.config.AgencyId, scanner.Text());
 		if err != nil {
 			return err
 		}
+		betMesages = append(betMesages, betMesage)
 
-		message.SendBetMessage(client.conn, betMesage);
+		if i == int(client.config.Batch){
+			message.SendBatchMessage(client.conn, betMesages);
+			betMesages = []message.BetMessage{}
+			i = 0
+		}else{
+			i++
+		}
+	}
+
+	if i != 0{
+		message.SendBatchMessage(client.conn, betMesages);
 	}
 
 	logger.Info("client-champion", logger.Success, "agency-id", "envio end")
 	message.EndBetMessages(client.conn)
 	
+	file, err := os.OpenFile(client.config.OutputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil
+	}
+
+	defer file.Close()
+
 	reciving := true
 	for reciving {
-		betMesage, err := message.ReciveMessage(client.conn)
+		betMessage, err := message.ReciveMessage(client.conn)
 
-		if err != nil || betMesage == (message.BetMessage{}){
+		if err != nil || len(betMessage) == 0{
 			reciving = false
 			continue
 		}
 
-		file, err := os.OpenFile("output/winers.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return nil
-		}
-		_, err = file.WriteString(betMesage.First_name)
-		if err != nil {
-			return nil
+		for _, bet := range betMessage {
+			_, err = file.WriteString(bet.First_name + "\n")
+			if err != nil {
+				return nil
+			}
 		}
 	}
 
