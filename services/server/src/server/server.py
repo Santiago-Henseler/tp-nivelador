@@ -17,7 +17,7 @@ class Server:
             logger.info(action, logger.LogResult.in_progress)
             comunication = True
             while comunication:
-                client_bet = message.recive_bet_message(client_socket)
+                client_bet = message.recive_message(client_socket)
 
                 if client_bet == None:
                     logger.info( action, logger.LogResult.success, "messages-amount", message_amount)
@@ -31,7 +31,11 @@ class Server:
             raise e
 
         for bet in lottery.load_bets():
-            logger.error( action, logger.LogResult.fail, "messages-amount", bet.first_name)
+            if lottery.has_won(bet):
+                logger.info( action, logger.LogResult.success, "win", bet.first_name)
+                message.send_bet_message(client_socket,  bet)
+
+        message.end_bet_message(client_socket)
 
 
     def run(self):

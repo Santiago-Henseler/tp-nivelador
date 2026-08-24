@@ -22,6 +22,7 @@ services:
       - server
     volumes:
       - ./input:/input
+      - ./output:/output
     environment:
       - AGENCY_ID=0
       - SERVER_HOST=server

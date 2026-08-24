@@ -1,7 +1,24 @@
 import socket
 import safe_socket
-import logger
+import logger #TODO
 from lottery.bet import Bet
+
+END_MESSAGE =  b'\x00'
+BET_MESSAGE = b'\x01'
+BACH_MESSAGE = b'\x02'
+
+def recive_message(socket: socket):
+    type = safe_socket.recv_all(socket, 1)
+
+    if type == BET_MESSAGE:
+        return recive_bet_message(socket)
+    elif type == END_MESSAGE:
+        return None
+    elif type == BACH_MESSAGE:
+        return None #TODO: config
+    else:
+        return None
+        
 
 def recive_bet_message(socket: socket.socket):
 
@@ -41,3 +58,6 @@ def send_bet_message(socket: socket.socket, bet):
     bytes += bet.birthdate.encode()
 
     safe_socket.send_all(socket, bytes)
+
+def end_bet_message(socket: socket.socket):
+    safe_socket.send_all(socket, END_MESSAGE)

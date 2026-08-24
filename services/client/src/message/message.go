@@ -6,9 +6,12 @@ import (
 	"strconv"
 	"errors"
 	"encoding/binary"
-	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/logger"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/safe_socket"
 )
+
+const END_MESSAGE byte = 0b00000000
+const BET_MESSAGE byte = 0b00000001
+const BACH_MESSAGE byte = 0b00000010
 
 type BetMessage struct{
 	Agency_id int
@@ -17,6 +20,24 @@ type BetMessage struct{
 	Document int
 	Birthdate string
 	Number int
+}
+
+func ReciveMessage(conn net.Conn) (BetMessage, error){
+	msgType, err := safe_socket.RecvAll(conn, 1)
+
+	if err != nil {
+		return BetMessage{}, err
+	}
+
+	if msgType[0] == BET_MESSAGE{
+		return ReciveBetMessage(conn)
+	}else if msgType[0] == END_MESSAGE{
+		return BetMessage{}, nil
+	}else if msgType[0] == BACH_MESSAGE{
+		return BetMessage{}, nil
+	}else{
+		return BetMessage{}, nil
+	}
 }
 
 func CreateMessageBet(agencyIdStr string, message string) (BetMessage, error){
@@ -49,6 +70,8 @@ func SendBetMessage(conn net.Conn, betMesage BetMessage) error{
 
 	var bytes []byte
 
+	bytes = append(bytes, []byte{byte(BET_MESSAGE)}...)
+
 	buf := make([]byte, 4)
 	binary.BigEndian.PutUint32(buf, uint32(betMesage.Agency_id))
 	bytes = append(bytes, buf...)
@@ -78,7 +101,6 @@ func SendBetMessage(conn net.Conn, betMesage BetMessage) error{
 	bytes = append(bytes, []byte(betMesage.Birthdate)...)
 
 	if err := safe_socket.SendAll(conn, bytes); err != nil {
-		logger.Error("send-message", logger.Fail, betMesage.Agency_id)
 		return err
 	}
 
@@ -86,9 +108,7 @@ func SendBetMessage(conn net.Conn, betMesage BetMessage) error{
 }
 
 func ReciveBetMessage(conn  net.Conn) (BetMessage, error){
-
 	integers, err := safe_socket.RecvAll(conn, 24)
-
 	if len(integers) < 24 || err != nil{
 		return BetMessage{}, errors.New("mensaje inválido")
 	}
@@ -102,7 +122,6 @@ func ReciveBetMessage(conn  net.Conn) (BetMessage, error){
 	birthdate_len :=  int32(binary.BigEndian.Uint32(integers[20:24]))
 
 	strings, err := safe_socket.RecvAll(conn, int(first_name_len + last_name_len + birthdate_len))
-
 	if err != nil{
 		return BetMessage{}, errors.New("mensaje inválido")
 	}
@@ -112,4 +131,8 @@ func ReciveBetMessage(conn  net.Conn) (BetMessage, error){
 	birthdate := string(strings[first_name_len+last_name_len+birthdate_len:])
 
 	return BetMessage{int(agencyId), first_name, last_name, int(document), birthdate, int(number)}, nil
+}
+
+func EndBetMessages(conn net.Conn){
+	safe_socket.SendAll(conn, []byte{byte(END_MESSAGE)})
 }

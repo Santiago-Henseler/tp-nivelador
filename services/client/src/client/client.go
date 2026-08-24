@@ -77,16 +77,27 @@ func (client *Client) Run() error {
 
 		message.SendBetMessage(client.conn, betMesage);
 	}
-	
-	a := false
-	for a {
-		betMesage, err := message.ReciveBetMessage(client.conn)
 
-		if err != nil{
-			a = false
+	logger.Info("client-champion", logger.Success, "agency-id", "envio end")
+	message.EndBetMessages(client.conn)
+	
+	reciving := true
+	for reciving {
+		betMesage, err := message.ReciveMessage(client.conn)
+
+		if err != nil || betMesage == (message.BetMessage{}){
+			reciving = false
 			continue
 		}
-		logger.Info("client-champion", logger.Success, "agency-id", betMesage.First_name)
+
+		file, err := os.OpenFile("output/winers.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return nil
+		}
+		_, err = file.WriteString(betMesage.First_name)
+		if err != nil {
+			return nil
+		}
 	}
 
 	logger.Info("client-send-file", logger.Success, "agency-id", client.config.AgencyId)
