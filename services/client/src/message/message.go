@@ -7,6 +7,7 @@ import (
 	"errors"
 	"encoding/binary"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/safe_socket"
+	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/logger"
 )
 
 const END_MESSAGE byte = 0b00000000
@@ -28,7 +29,6 @@ func ReciveMessage(conn net.Conn) (BetMessage, error){
 	if err != nil {
 		return BetMessage{}, err
 	}
-
 	if msgType[0] == BET_MESSAGE{
 		return ReciveBetMessage(conn)
 	}else if msgType[0] == END_MESSAGE{

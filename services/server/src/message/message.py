@@ -44,8 +44,8 @@ def recive_bet_message(socket: socket.socket):
     return Bet(agency_id, first_name, last_name, document, birthdate, number)
 
 def send_bet_message(socket: socket.socket, bet):
-
-    bytes = bet.agency_id.to_bytes(4, byteorder='big')
+    bytes = BET_MESSAGE
+    bytes += bet.agency_id.to_bytes(4, byteorder='big')
     bytes += bet.document.to_bytes(4, byteorder='big')
     bytes += bet.number.to_bytes(4, byteorder='big')
 
