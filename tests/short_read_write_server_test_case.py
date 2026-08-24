@@ -71,5 +71,7 @@ class ServerShortReadWrite(TestCase):
 
     @staticmethod
     def test() -> None:
+        print("b")
         ServerShortReadWrite._test_recv_all()
+        print("a")
         ServerShortReadWrite._test_send_all()

@@ -1,14 +1,16 @@
 import socket
 import logger
 import message
+import threading
 from lottery.lottery import Lottery
 
 OUTPUT_FILE = "output.txt"
 
 class Server:
-    def __init__(self, server_host: str, server_port: int) -> None:
+    def __init__(self, server_host: str, server_port: int, quorum) -> None:
         self.server_host = server_host
         self.server_port = server_port
+        self.barrier = threading.Barrier(quorum)
         
     def _handle_client(self, client_socket, lottery):
         action = "handle-client"
@@ -29,6 +31,8 @@ class Server:
         except Exception as e:
             logger.error( action, logger.LogResult.fail, "messages-amount", message_amount)
             raise e
+
+        self.barrier.wait()
 
         for bet in lottery.load_bets():
             if lottery.has_won(bet):
@@ -51,5 +55,5 @@ class Server:
                     logger.error(action, logger.LogResult.fail)
                     raise e
                 logger.info(action, logger.LogResult.success)
-
-                self._handle_client(client_socket, lottery)
+               
+                threading.Thread(target=self._handle_client, args=(client_socket, lottery), ).start()

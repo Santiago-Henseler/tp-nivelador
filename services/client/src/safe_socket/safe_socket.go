@@ -6,7 +6,7 @@ func SendAll(socket io.Writer, bytes []byte) error {
 
 	bytes_send := 0
 	for bytes_send < len(bytes){
-		sended, err := socket.Write(bytes)
+		sended, err := socket.Write(bytes[bytes_send:])
 		bytes_send += sended
 
 		if err != nil {
@@ -17,18 +17,15 @@ func SendAll(socket io.Writer, bytes []byte) error {
 }
 
 func RecvAll(socket io.Reader, size int) ([]byte, error) {
-	buffer := make([]byte, size)
-	bytes := make([]byte, 0, size)
+	bytes := make([]byte, size)
 
-	var recived = 0
-
+	recived := 0
 	for recived < size {
-		byte_rec, err := socket.Read(buffer)
+		byte_rec, err := socket.Read(bytes[recived:])
+		recived += byte_rec
 		if err != nil {
 			return nil, err
 		}
-		recived += byte_rec
-		bytes = append(bytes, buffer[:byte_rec]...) 
 	}
 
 	return bytes, nil

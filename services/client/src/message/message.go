@@ -156,7 +156,7 @@ func ReciveBetMessage(conn  net.Conn) ([]BetMessage, error){
 
 	first_name := string(strings[0:first_name_len])
 	last_name := string(strings[first_name_len:first_name_len+last_name_len])
-	birthdate := string(strings[first_name_len+last_name_len+birthdate_len:])
+	birthdate := string(strings[first_name_len+last_name_len:first_name_len+last_name_len+birthdate_len])
 
 	return []BetMessage{{int(agencyId), first_name, last_name, int(document), birthdate, int(number)}}, nil
 }

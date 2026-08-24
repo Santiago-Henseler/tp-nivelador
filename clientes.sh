@@ -10,6 +10,7 @@ echo "services:
       - "5678:5678"
     environment:
       - PYTHONUNBUFFERED=1
+      - AGENCY_QUORUM_MIN=2
       - SERVER_HOST=server
       - SERVER_PORT=5678" > docker-compose.yml
 
@@ -29,8 +30,8 @@ for i in $(seq 0 $1); do
       - SERVER_HOST=server
       - SERVER_PORT=5678
       - BATCH_SIZE=3
-      - INPUTFILE=input/input-0.csv
-      - OUTPUTFILE=output/winers.txt" >> docker-compose.yml
+      - INPUT_FILE=input/input-0.csv
+      - OUTPUT_FILE=output/winers.txt" >> docker-compose.yml
 done
 
 echo "[INFO] Se creo el docker-compose con" $1 "clientes"

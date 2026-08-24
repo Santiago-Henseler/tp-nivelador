@@ -15,7 +15,6 @@ def recive_message(socket: socket):
     elif type == END_MESSAGE:
         return None
     elif type == BATCH_MESSAGE:
-        logger.info( "a", logger.LogResult.success, "messages-amount", type)
         return recibe_batch_message(socket)
     else:
         return None

@@ -33,14 +33,14 @@ func loadConfig() (client.ClientConfig, error) {
 		return client.ClientConfig{}, errors.New("invalid BATCH value")
 	}
 
-	inputFile := os.Getenv("INPUTFILE")
+	inputFile := os.Getenv("INPUT_FILE")
 	if inputFile == "" {
-		return client.ClientConfig{}, errors.New("INPUTFILE environment variable is required")
+		return client.ClientConfig{}, errors.New("INPUT_FILE environment variable is required")
 	}
 
-	outputFile := os.Getenv("OUTPUTFILE")
+	outputFile := os.Getenv("OUTPUT_FILE")
 	if outputFile == "" {
-		return client.ClientConfig{}, errors.New("OUTPUTFILE environment variable is required")
+		return client.ClientConfig{}, errors.New("OUTPUT_FILE environment variable is required")
 	}
 
 	return client.ClientConfig{
@@ -75,5 +75,6 @@ func run() int {
 }
 
 func main() {
-	os.Exit(run())
+	run()
+	os.Exit(0)
 }

@@ -4,6 +4,7 @@ import (
 	"net"
 	"time"
 	"os"
+	"strconv"
 	"bufio"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/logger"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/message"
@@ -91,8 +92,6 @@ func (client *Client) Run() error {
 	if i != 0{
 		message.SendBatchMessage(client.conn, betMesages);
 	}
-
-	logger.Info("client-champion", logger.Success, "agency-id", "envio end")
 	message.EndBetMessages(client.conn)
 	
 	file, err := os.OpenFile(client.config.OutputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -112,7 +111,7 @@ func (client *Client) Run() error {
 		}
 
 		for _, bet := range betMessage {
-			_, err = file.WriteString(bet.First_name + "\n")
+			_, err = file.WriteString( bet.First_name + ","+bet.Last_name + "," + strconv.Itoa(bet.Document) + "," + bet.Birthdate + "," +strconv.Itoa(bet.Number) + "\n")
 			if err != nil {
 				return nil
 			}

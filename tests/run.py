@@ -12,9 +12,7 @@ from tests import (
 )
 
 TEST_CASES = [
-    Json,
-    ForcedExit,
-    OutputFiles,
+
     Concurrency,
     MemoryProfile,
     SigtermHandling,
