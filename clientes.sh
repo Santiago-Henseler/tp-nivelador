@@ -31,7 +31,7 @@ for i in $(seq 0 $1); do
       - SERVER_PORT=5678
       - BATCH_SIZE=3
       - INPUT_FILE=input/input-0.csv
-      - OUTPUT_FILE=output/winers.txt" >> docker-compose.yml
+      - OUTPUT_FILE=output/winers.txt" >> docker-compose.yaml
 done
 
 echo "[INFO] Se creo el docker-compose con" $1 "clientes"

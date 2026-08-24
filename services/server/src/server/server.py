@@ -40,20 +40,18 @@ class Server:
 
         message.end_bet_message(client_socket)
 
-
     def run(self):
-        action = "accept-connection"
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.server_host, self.server_port))
             server_socket.listen()
             lottery = Lottery("output/"+OUTPUT_FILE)
             while True:
                 try:
-                    logger.info(action, logger.LogResult.in_progress)
+                    logger.info("accept-connection", logger.LogResult.in_progress)
                     client_socket, _ = server_socket.accept()
                 except Exception as e:
-                    logger.error(action, logger.LogResult.fail)
+                    logger.error("accept-connection", logger.LogResult.fail)
                     raise e
-                logger.info(action, logger.LogResult.success)
+                logger.info("accept-connection", logger.LogResult.success)
                
                 threading.Thread(target=self._handle_client, args=(client_socket, lottery), ).start()
