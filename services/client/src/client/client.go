@@ -59,7 +59,7 @@ func connectToServer(host, port string) (net.Conn, error) {
 	return conn, err
 }
 
-func (client *Client) Run() int {
+func (client *Client) Run(sigChan <-chan os.Signal) int {
 	archivo, err := os.Open(client.config.InputFile)
 	if err != nil {
 		logger.Error("client-open-file", logger.Fail, "err", err)
@@ -72,6 +72,12 @@ func (client *Client) Run() int {
 	betMesages := []message.BetMessage{}
 	scanner := bufio.NewScanner(archivo)
 	for scanner.Scan() {
+		select {
+			case <-sigChan:
+				client.conn.Close()
+				return 0
+			default:
+		}
 		
 		betMesage, err := message.CreateMessageBet(client.config.AgencyId, scanner.Text());
 		if err != nil {
@@ -100,6 +106,12 @@ func (client *Client) Run() int {
 
 	reciving := true
 	for reciving {
+		select {
+			case <-sigChan:
+				client.conn.Close()
+				return 0
+			default:
+		}
 		betMessage, err := message.ReciveMessage(client.conn)
 
 		if err != nil || len(betMessage) == 0{
@@ -116,7 +128,8 @@ func (client *Client) Run() int {
 		}
 	}
 
+
 	logger.Info("client-send-file", logger.Success, "agency-id", client.config.AgencyId)
-	
+	client.conn.Close()
 	return 0
 }
