@@ -66,15 +66,14 @@ func run() int {
 		return 1
 	}
 
-	if err := client.Run(); err != nil {
+	if err := client.Run(); err != 0 {
 		logger.Error("client-run", logger.Fail, "err", err)
-		return 1
+		return err
 	}
 	
 	return 0
 }
 
 func main() {
-	run()
-	os.Exit(0)
+	os.Exit(run())
 }

@@ -59,44 +59,41 @@ func connectToServer(host, port string) (net.Conn, error) {
 	return conn, err
 }
 
-func (client *Client) Run() error {
+func (client *Client) Run() int {
 	archivo, err := os.Open(client.config.InputFile)
 	if err != nil {
 		logger.Error("client-open-file", logger.Fail, "err", err)
-		return nil
+		return 1
 	}
 
 	defer client.conn.Close()
 	defer archivo.Close()
 
-	i := 0
 	betMesages := []message.BetMessage{}
 	scanner := bufio.NewScanner(archivo)
 	for scanner.Scan() {
 		
 		betMesage, err := message.CreateMessageBet(client.config.AgencyId, scanner.Text());
 		if err != nil {
-			return err
+			return 1
 		}
 		betMesages = append(betMesages, betMesage)
 
-		if i == int(client.config.Batch){
+		if len(betMesages) == int(client.config.Batch){
 			message.SendBatchMessage(client.conn, betMesages);
 			betMesages = []message.BetMessage{}
-			i = 0
-		}else{
-			i++
 		}
 	}
 
-	if i != 0{
+	if len(betMesages) != 0{
 		message.SendBatchMessage(client.conn, betMesages);
 	}
 	message.EndBetMessages(client.conn)
 	
 	file, err := os.OpenFile(client.config.OutputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return nil
+		logger.Error("client-open-file", logger.Fail, "err", err)
+		return 1
 	}
 
 	defer file.Close()
@@ -113,12 +110,13 @@ func (client *Client) Run() error {
 		for _, bet := range betMessage {
 			_, err = file.WriteString( bet.First_name + ","+bet.Last_name + "," + strconv.Itoa(bet.Document) + "," + bet.Birthdate + "," +strconv.Itoa(bet.Number) + "\n")
 			if err != nil {
-				return nil
+				logger.Error("client-write-file", logger.Fail, "err", err)
+				return 1
 			}
 		}
 	}
 
 	logger.Info("client-send-file", logger.Success, "agency-id", client.config.AgencyId)
 	
-	return nil
+	return 0
 }

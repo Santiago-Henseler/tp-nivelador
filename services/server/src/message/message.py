@@ -1,6 +1,5 @@
 import socket
 import safe_socket
-import logger #TODO
 from lottery.bet import Bet
 
 END_MESSAGE =  b'\x00'
@@ -108,12 +107,16 @@ def bet_to_bytes(bet):
     bytes += bet.document.to_bytes(4, byteorder='big')
     bytes += bet.number.to_bytes(4, byteorder='big')
 
-    bytes += len(bet.first_name).to_bytes(4, byteorder='big')
-    bytes += len(bet.last_name).to_bytes(4,  byteorder='big')
-    bytes += len(bet.birthdate).to_bytes(4, byteorder='big')
+    first_name = bet.first_name.encode()
+    last_name = bet.last_name.encode()
+    birthdate = bet.birthdate.encode()
 
-    bytes += bet.first_name.encode()
-    bytes += bet.last_name.encode()
-    bytes += bet.birthdate.encode()
+    bytes += len(first_name).to_bytes(4, byteorder='big')
+    bytes += len(last_name).to_bytes(4,  byteorder='big')
+    bytes += len(birthdate).to_bytes(4, byteorder='big')
+
+    bytes += first_name
+    bytes += last_name
+    bytes += birthdate
 
     return bytes

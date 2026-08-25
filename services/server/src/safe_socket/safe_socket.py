@@ -6,9 +6,6 @@ def recv_all(socket: socket.socket, size):
     while recived < size:
         try:
             byte_rec = socket.recv(size - recived)
-            if not byte_rec:
-                return bytes
-
             recived += len(byte_rec)
             bytes += byte_rec
         except Exception as e:
@@ -21,7 +18,7 @@ def send_all(socket: socket.socket, bytes):
     bytes_send = 0 
     while bytes_send < len(bytes):
         try:
-            sended = socket.send(bytes[bytes_send:len(bytes)])
+            sended = socket.send(bytes[bytes_send:])
             bytes_send += sended
         except Exception as e:
             return 0
