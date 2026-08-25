@@ -10,35 +10,46 @@ class Server:
     def __init__(self, server_host: str, server_port: int, quorum) -> None:
         self.server_host = server_host
         self.server_port = server_port
-        self.barrier = threading.Barrier(quorum)
+        self.quorum = quorum
+        self.bets = 0
+        self.condVar = threading.Condition()
         
     def _handle_client(self, client_socket, lottery):
-        action = "handle-client"
         message_amount = 0
+        client_bets = []
         try:
-            logger.info(action, logger.LogResult.in_progress)
+            logger.info("handle-client", logger.LogResult.in_progress)
             comunication = True
             while comunication:
                 client_bet = message.recive_message(client_socket)
 
                 if client_bet == None:
-                    logger.info( action, logger.LogResult.success, "messages-amount", message_amount)
+                    logger.info( "handle-client", logger.LogResult.success, "messages-amount", message_amount)
                     comunication = False
                     continue
                 
                 lottery.store_bets(client_bet)
+                client_bets.extend(client_bet)
                 message_amount += 1
         except Exception as e:
-            logger.error( action, logger.LogResult.fail, "messages-amount", message_amount)
+            logger.error( "handle-client", logger.LogResult.fail, "messages-amount", message_amount)
             raise e
 
-        self.barrier.wait()
+        with self.condVar:
+            self.bets += 1
+            if self.bets == self.quorum:
+                self.condVar.notify_all()
 
-        for bet in lottery.load_bets():
+            while self.bets < self.quorum:
+                self.condVar.wait()
+
+        for bet in client_bets:
             if lottery.has_won(bet):
+                logger.error("handle-client", logger.LogResult.fail, "messages-amount", "mando mensajito")
                 message.send_bet_message(client_socket,  bet)
 
         message.end_bet_message(client_socket)
+        logger.error("handle-client", logger.LogResult.fail, "messages-amount", "fin")
 
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:

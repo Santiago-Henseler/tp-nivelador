@@ -15,11 +15,11 @@ def recive_message(socket: socket):
     elif type == END_MESSAGE:
         return None
     elif type == BATCH_MESSAGE:
-        return recibe_batch_message(socket)
+        return recie_batch_message(socket)
     else:
         return None
 
-def recibe_batch_message(socket: socket.socket):
+def recie_batch_message(socket: socket.socket):
     info = safe_socket.recv_all(socket, 8)
     if len(info) != 8:
         return None
@@ -54,7 +54,6 @@ def recibe_batch_message(socket: socket.socket):
         bets.append(Bet(agency_id, first_name, last_name, document, birthdate, number))
 
     return bets
-
 
 def send_batch_message(socket: socket.socket, bets):
     bytes = BATCH_MESSAGE
