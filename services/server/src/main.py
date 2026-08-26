@@ -13,8 +13,6 @@ kill = threading.Event()
 
 def handle_sigterm(signum, frame):
     kill.set()
-    
-    sys.exit(0) 
 
 signal.signal(signal.SIGTERM, handle_sigterm)
 

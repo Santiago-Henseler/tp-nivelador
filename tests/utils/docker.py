@@ -30,6 +30,7 @@ def await_containers(service_names: list[str]) -> int:
     result = shell_cmd.run(
         ["docker", "container", "wait", *service_names], capture=True
     )
+    print(result)
     zero_exit_code_count = 0
     for char in result.stdout.decode("utf-8"):
         if char == "0":

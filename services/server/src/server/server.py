@@ -63,17 +63,21 @@ class Server:
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.server_host, self.server_port))
+            server_socket.settimeout(1.0)
             server_socket.listen()
             lottery = Lottery(OUTPUT_FILE)
             while True:
                 if self.kill.is_set():
                     server_socket.close()
-                    return
+                    return 0
+                
                 try:
                     logger.info("accept-connection", logger.LogResult.in_progress)
                     client_socket, _ = server_socket.accept()
+                except socket.timeout:
+                    continue
                 except Exception as e:
                     logger.error("accept-connection", logger.LogResult.fail)
                     raise e
                 logger.info("accept-connection", logger.LogResult.success)
-                threading.Thread(target=self._handle_client, args=(client_socket, lottery)).start()
+                threading.Thread(target=self._handle_client, args=(client_socket, lottery), daemon=True).start()

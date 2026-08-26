@@ -29,8 +29,7 @@ def find_environment_variable(service, target_environment_variable) -> str:
 def get_container_last_logs(docker_compose_path: str, service_name: str, tail=10):
     result = shell_cmd.run(
         [
-            "docker",
-            "compose",
+            "docker-compose",
             "-f",
             docker_compose_path,
             "logs",
