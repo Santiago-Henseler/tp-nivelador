@@ -55,12 +55,9 @@ class Server:
                 return
             
             if lottery.has_won(bet):
-                logger.error("handle-client", logger.LogResult.fail, "messages-amount", "mando mensajito")
                 message.send_bet_message(client_socket,  bet)
 
         message.end_bet_message(client_socket)
-        logger.error("handle-client", logger.LogResult.fail, "messages-amount", "fin")
-
         client_socket.close()
 
     def run(self):
