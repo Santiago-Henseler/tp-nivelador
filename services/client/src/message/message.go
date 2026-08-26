@@ -95,11 +95,11 @@ func ReciveBatchMessage(conn net.Conn) ([]BetMessage, error){
 
 		size += 24
 
-		first_name := string(betsBytes[size:first_name_len])
+		first_name := string(betsBytes[size:size+int(first_name_len)])
 		last_name := string(betsBytes[size+int(first_name_len):size+int(first_name_len+last_name_len)])
 		birthdate := string(betsBytes[size+int(first_name_len+last_name_len):size+int(first_name_len+last_name_len+birthdate_len)])
 
-		size += int(first_name_len+last_name_len+birthdate_len+birthdate_len)
+		size += int(first_name_len+last_name_len+birthdate_len)
 
 		bets = append(bets, BetMessage{int(agencyId), first_name, last_name, int(document), birthdate, int(number)})
 	}	

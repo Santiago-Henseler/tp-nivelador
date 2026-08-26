@@ -37,7 +37,7 @@ class MemoryProfile(TestCase):
     def test() -> None:
         docker_compose_content = docker_compose.read(DOCKER_COMPOSE_PATH)
         services = docker_compose_content["services"]
-
+        
         client_service_name = docker_compose.find_services_by_context(
             services, "client"
         )[0]

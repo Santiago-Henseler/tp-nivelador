@@ -34,7 +34,6 @@ class Server:
                     comunication = False
                     continue
                 
-                lottery.store_bets(client_bet)
                 client_bets.extend(client_bet)
                 message_amount += 1
         except Exception as e:
@@ -49,6 +48,7 @@ class Server:
             while self.bets < self.quorum:
                 self.condVar.wait()
 
+        lottery.store_bets(client_bets)
         for bet in client_bets:
             if self.kill.is_set():
                 client_socket.close()
@@ -67,7 +67,7 @@ class Server:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.server_host, self.server_port))
             server_socket.listen()
-            lottery = Lottery("output/"+OUTPUT_FILE)
+            lottery = Lottery(OUTPUT_FILE)
             while True:
                 if self.kill.is_set():
                     server_socket.close()
