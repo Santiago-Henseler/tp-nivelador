@@ -25,6 +25,8 @@ type ClientConfig struct {
 type Client struct {
 	conn   net.Conn
 	config ClientConfig
+	inputFile *os.File
+	outputFile *os.File
 }
 
 func NewClient(config ClientConfig) (*Client, error) {
@@ -34,7 +36,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 		return nil, err
 	}
 
-	client := &Client{conn: conn, config: config}
+	client := &Client{conn: conn, config: config, inputFile: nil, outputFile: nil}
 	return client, nil
 }
 
@@ -59,26 +61,33 @@ func connectToServer(host, port string) (net.Conn, error) {
 	return conn, err
 }
 
-func (client *Client) Run(sigChan <-chan os.Signal) int {
+func (client *Client) Close() {
+	if client.conn != nil {
+		client.conn.Close()
+	}
+	if client.inputFile != nil{
+		client.inputFile.Close()
+	}
+	if client.outputFile != nil{
+		client.outputFile.Close()
+	}
+}
+
+func (client *Client) Run() int {
 	archivo, err := os.Open(client.config.InputFile)
 	if err != nil {
 		logger.Error("client-open-file", logger.Fail, "err", err)
 		return 1
 	}
 
+	client.inputFile = archivo
+
 	defer client.conn.Close()
-	defer archivo.Close()
+	defer client.inputFile.Close()
 
 	betMesages := []message.BetMessage{}
-	scanner := bufio.NewScanner(archivo)
-	for scanner.Scan() {
-		select {
-			case <-sigChan:
-				client.conn.Close()
-				return 0
-			default:
-		}
-		
+	scanner := bufio.NewScanner(client.inputFile)
+	for scanner.Scan() {		
 		betMesage, err := message.CreateMessageBet(client.config.AgencyId, scanner.Text());
 		if err != nil {
 			return 1
@@ -100,18 +109,13 @@ func (client *Client) Run(sigChan <-chan os.Signal) int {
 	if err != nil {
 		logger.Error("client-open-file", logger.Fail, "err", err)
 		return 1
-	}
+	}	
 
-	defer file.Close()
+	client.outputFile = file
+	defer client.outputFile.Close()
 
 	reciving := true
 	for reciving {
-		select {
-			case <-sigChan:
-				client.conn.Close()
-				return 0
-			default:
-		}
 		betMessage, err := message.ReciveMessage(client.conn)
 
 		if err != nil || len(betMessage) == 0{
@@ -120,7 +124,7 @@ func (client *Client) Run(sigChan <-chan os.Signal) int {
 		}
 
 		for _, bet := range betMessage {
-			_, err = file.WriteString( bet.First_name + ","+bet.Last_name + "," + strconv.Itoa(bet.Document) + "," + bet.Birthdate + "," +strconv.Itoa(bet.Number) + "\n")
+			_, err = client.outputFile.WriteString( bet.First_name + ","+bet.Last_name + "," + strconv.Itoa(bet.Document) + "," + bet.Birthdate + "," +strconv.Itoa(bet.Number) + "\n")
 			if err != nil {
 				logger.Error("client-write-file", logger.Fail, "err", err)
 				return 1
@@ -130,6 +134,5 @@ func (client *Client) Run(sigChan <-chan os.Signal) int {
 
 
 	logger.Info("client-send-file", logger.Success, "agency-id", client.config.AgencyId)
-	client.conn.Close()
 	return 0
 }

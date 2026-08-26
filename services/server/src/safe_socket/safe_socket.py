@@ -6,6 +6,10 @@ def recv_all(socket: socket.socket, size):
     while recived < size:
         try:
             byte_rec = socket.recv(size - recived)
+
+            if byte_rec == 0:
+                return b""
+
             recived += len(byte_rec)
             bytes += byte_rec
         except Exception as e:

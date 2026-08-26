@@ -68,7 +68,12 @@ func run(sigChan  <-chan os.Signal) int {
 		return 1
 	}
 
-	if err := client.Run(sigChan); err != 0 {
+	go func() {
+		<-sigChan
+		client.Close()
+	}()
+
+	if err := client.Run(); err != 0 {
 		logger.Error("client-run", logger.Fail, "err", err)
 		return err
 	}

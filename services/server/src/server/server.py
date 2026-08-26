@@ -2,6 +2,7 @@ import socket
 import logger
 import message
 import threading
+import time
 from lottery.lottery import Lottery
 
 OUTPUT_FILE = "output.txt"
