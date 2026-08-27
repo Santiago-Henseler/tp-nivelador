@@ -33,9 +33,9 @@ def get_container_last_logs(docker_compose_path: str, service_name: str, tail=10
             "-f",
             docker_compose_path,
             "logs",
-            service_name,
             "--tail",
             str(tail),
+            service_name,
         ],
         capture=True,
     )
