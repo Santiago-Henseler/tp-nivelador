@@ -7,7 +7,6 @@ import (
 	"errors"
 	"encoding/binary"
 	"github.com/7574-sistemas-distribuidos/tp-nivelador/src/safe_socket"
-	//"github.com/7574-sistemas-distribuidos/tp-nivelador/src/logger"
 )
 
 const END_MESSAGE byte = 0b00000000
