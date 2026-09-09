@@ -42,13 +42,14 @@ class Server:
 
         with self.condVar:
             self.bets += 1
+            lottery.store_bets(client_bets)
+            
             if self.bets == self.quorum:
                 self.condVar.notify_all()
 
             while self.bets < self.quorum:
                 self.condVar.wait()
 
-        lottery.store_bets(client_bets)
         for bet in client_bets:
             if self.kill.is_set():
                 client_socket.close()
